@@ -20,6 +20,12 @@ def menu():
     print("2. Test using a trained weights file")
     print("3. Exit")
 
+# Menu to be displayed after testing or training
+def inMenu():
+    print("\n Please choose from one of the options below: ")
+    print("1. Test/deploy using a testing/deploying data file")
+    print("2. Exit")
+
 # Function to get the name of the file you want to train (EDIT)
 def getTrainingFile():
     print("\nEnter the training data filename: ")
@@ -199,6 +205,7 @@ def writeWeights(finWeights, finBias, outFile, inputD):
 
     out.write(json.dumps(finWeights))
     out.write('\n')
+    out.write('\n')
     out.write(json.dumps(finBias))
 
     out.close()
@@ -266,6 +273,9 @@ def perceptron(inDim, outDim, numPairs, trainVals, outputVals, weights, epochs, 
                 break
         update = 0 # Else just reset update
 
+# Function to test using the stored weights
+# def tes
+
 # Main program
 def main():
     greet()
@@ -283,10 +293,19 @@ def main():
             # Get variables out
             inDim, outDim, pairs, trainP, outP = data
             perceptron(inDim[0], outDim[0], pairs[0], trainP, outP, 1, 20, 1, .5, outFile)
-            # pass
+            # New test for testing or  quit from here
+            inMenu()
+            selection = int(input("\n>>> "))
+            # Check user option
+            if selection == 1: # user chooses 1
+                # get testing data file name and name to save results
+                names = callHelpers(2)
+                # Store filenames as variables
+                testFile, finResults = names
+            else: sys.exit()
         # user chooses to test
         elif choice == 2:
-
+            pass
 
         # User selects any other option (change laterz)
         else: sys.exit()
