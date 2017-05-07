@@ -3,12 +3,8 @@ import sys
 import numpy as np
 import random as r
 import json
+import ast
 
-# Function to read in input file
-def readFile(fName):
-    # read in the first three numbers (input dimensions, out dimensions, num pairs)
-    with open(fName) as inFile:
-        inDim = inFile.read
 # Prompt the user
 def greet():
     print("Hello and welcome to my first neural network!")
@@ -148,9 +144,7 @@ def callHelpers(option):
         else:
             testFile = getTestingFile()
             trainResults = getFileName(option)
-            # testResults = get
             return testFile, trainResults
-            pass
     except KeyboardInterrupt:
         sys.exit()
 
@@ -211,15 +205,19 @@ def writeWeights(finWeights, finBias, outFile, inputD):
     out.close()
 
     return outFile
+# Function to store the classified outputs for each pair
+def classifyOutputs(y, testResults):
+    pass
 
 # Function to create corresponding weight dictionary
 def createWeights(inputD, outputD, weight):
     weights = {} # to store corresponding weights
+    val = round(r.uniform(-0.5, 0.5), 2)
     for num in range(inputD): # creates dict the size of input dimensions
         if not weight: # initialize weights to zero
             weights[num] = [weight] * outputD
         else: # initialize to random values
-            weights[num] = [round(r.uniform(-0.5, 0.5), 2)] * outputD
+            weights[num] = [val] * outputD
     return weights
 
 # Function to return the activation value
@@ -241,14 +239,14 @@ def perceptron(inDim, outDim, numPairs, trainVals, outputVals, weights, epochs, 
 
     while not converged:
         for index, pair in enumerate(trainVals):
-            print("This is index: ", index)
+            # print("This is index: ", index)
             for j in range(outDim):
                 for i, x in enumerate(pair):
                     summation += (x * neuronW[i][j])
                 # Finished gathering the summation
                 y_in[j] = round(bias[j] + summation, 2)
                 y[j] = activateF(y_in[j], threshold) # Calculate y[j]
-                print("My y[j] is: {} and my t is: {}".format(y[j], outputVals[index][j]))
+                # print("My y[j] is: {} and my t is: {}".format(y[j], outputVals[index][j]))
                 # Check to update bias and weights
                 if float(outputVals[index][j]) != y[j]:
                     update = 1 # Something has been updated during the epoch
@@ -273,8 +271,35 @@ def perceptron(inDim, outDim, numPairs, trainVals, outputVals, weights, epochs, 
                 break
         update = 0 # Else just reset update
 
+# Function to get the trained weights out
+def getTrainedWeights(trainWFile):
+    # open the trained weights file
+    with open(trainWFile, 'r') as trained:
+        tWeights = ast.literal_eval(trained.readline())
+        # Cast everything as int/float
+        tWeights = {int(k): [float(i) for i in v] for k,v in tWeights.items()}
+        trained.readline() # skip that new line
+        tBias = ast.literal_eval(trained.readline())
+        tBias = [float(i) for i in tBias]
+        return tWeights, tBias
+
 # Function to test using the stored weights
-# def tes
+def deployPerceptron(trainWeights, trainBias, testInDim, testOutDim, testP, testOutP, alpha, threshold):
+    y_in = [0] * testOutDim
+    y = [0] * testOutDim
+    summation = 0
+
+    for index, pair in enumerate(testP):
+        for j in range(testOutDim):
+            for i, x in enumerate(pair):
+                summation += (x * trainWeights[i][j])
+            # Finished gathering the summation
+            print("Summation: ", summation)
+            y_in[j] = round(trainBias[j] + summation, 2)
+            y[j] = activateF(y_in[j], threshold) # Calculate y[j]
+        print("This is the end of test pair {}".format(index))
+        print(y)
+        summation = 0 # reset summation
 
 # Main program
 def main():
@@ -284,16 +309,14 @@ def main():
         choice = int(input("\n>>> "))
         # user choose to train
         if choice == 1:
-            # vals = callHelpers(choice)
+            vals = callHelpers(choice)
             # Get variables out
-            #trainFile, weights, epochs, outFile, learnRate, threshold = vals
-            trainFile = getTrainingFile()
-            outFile = getFileName(1)
+            trainFile, weights, epochs, outFile, learnRate, threshold = vals
             data = readAndStore(trainFile)
             # Get variables out
             inDim, outDim, pairs, trainP, outP = data
-            perceptron(inDim[0], outDim[0], pairs[0], trainP, outP, 1, 20, 1, .5, outFile)
-            # New test for testing or  quit from here
+            perceptron(inDim[0], outDim[0], pairs[0], trainP, outP, weights, epochs, learnRate, threshold, outFile)
+            # New test for testing or quit from here
             inMenu()
             selection = int(input("\n>>> "))
             # Check user option
@@ -302,9 +325,18 @@ def main():
                 names = callHelpers(2)
                 # Store filenames as variables
                 testFile, finResults = names
+                # Get trained weights
+                results = getTrainedWeights(outFile)
+                trainW, trainB = results
+                # get data from test file
+                testData = readAndStore(testFile)
+                testInDim, testOutDim, testPairs, testP, testOutP = testData
+                # call the testing Function
+                deployPerceptron(trainW, trainB, testInDim[0], testOutDim[0], testP, testOutP, learnRate, threshold)
             else: sys.exit()
         # user chooses to test
         elif choice == 2:
+            helpers = callHelpers(choice)
             pass
 
         # User selects any other option (change laterz)
